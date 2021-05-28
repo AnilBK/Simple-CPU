@@ -28,7 +28,7 @@ OPCODE_JUMP_TO_IF_LAST_OP_GREATER = 4
 OPCODE_JUMP_TO_IF_LAST_OP_EQUAL = 5
 
 
-BUILT_IN_OPERATORS = ['+', '-', '&', '|','>', '<', ':']
+BUILT_IN_OPERATORS = ['+', '-', '&', '|', '>', '<', ':']
 #CONDITIONAL_OPERATORS = ['>', '<', ':']
 
 variables_address_mapping = {}
@@ -53,6 +53,19 @@ def is_number(text):
 		if not text[i].isdigit():
 			return False
 	return True		
+		
+def isVariableInRAM(value):
+	return value in variables_address_mapping.keys()
+		
+def get_address_of_variable(var_name):
+	global RAM_ADDRESS
+	
+	var_name = var_name.strip()
+
+	if not isVariableInRAM(var_name):
+		variables_address_mapping[var_name] = RAM_ADDRESS
+		RAM_ADDRESS += 1
+	return int(variables_address_mapping[var_name])	
 			
 def set_input_line_to_ifstream(s):
 	p_s = s << 6
@@ -99,10 +112,6 @@ def set_register(REGISTER_INDEX, value, param):
 	_code += str(OPCODE_EXECUTE_OPERATION) + " , " + str(value).strip() + "\n"			
 	return _code
 	
-OPCODE_JUMP_TO_IF_LAST_OP_SMALL = 3
-OPCODE_JUMP_TO_IF_LAST_OP_GREATER = 4
-OPCODE_JUMP_TO_IF_LAST_OP_EQUAL = 5
-
 def set_jump_if_last_op_small(new_program_counter):
 	_code = ""
 	_code += str(OPCODE_JUMP_TO_IF_LAST_OP_SMALL) + " , " + str(new_program_counter).strip() + "\n"
@@ -118,16 +127,6 @@ def set_jump_if_last_op_equal(new_program_counter):
 	_code += str(OPCODE_JUMP_TO_IF_LAST_OP_EQUAL) + " , " + str(new_program_counter).strip() + "\n"
 	return _code
 	
-		
-"""	
-def set_A(value):
-	value = value.strip()
-	_code = ""
-	param = get_combined_output(0, 0, REGISTER_A, 0, 1) #Registers reads from input line.
-	_code += str(OPCODE_STORE_OPERATION) + " , " + str(param) + "\n"			
-	_code += str(OPCODE_EXECUTE_OPERATION) + " , " + str(value) + "\n"			
-	return _code
-"""
 def set_A(value):
 	param = get_combined_output(0, 0, REGISTER_A, 0, 1) #Registers reads from input line.
 	return set_register(REGISTER_A, value, param)
@@ -171,11 +170,10 @@ def set_tmp_equals_C():
 def set_tmp_equals_ALU_ACCUM(op = 0):
 	param = get_combined_output(0, 1, REGISTER_ALU_ACCUM, 1, 0)
 	return set_register(REGISTER_ALU_ACCUM, op, param)
+
 def set_tmp_equals_LOGIC_ACCUM(op = 0):
 	param = get_combined_output(0, 1, REGISTER_LOGIC_ACCUM, 1, 0)
 	return set_register(REGISTER_LOGIC_ACCUM, op, param)
-	
-	
 	
 def set_Memory_Address(value):
 	param = get_combined_output(0, 0, REGISTER_MEMORY_ADDRESS, 0, 1) #Registers reads from input line.
@@ -205,22 +203,6 @@ def set_tmp_equals_RAM():
 def set_all_logical_comparisions():
 	param = get_combined_output(0, 0, REGISTER_ALL_CONDITIONAL_TESTS, 1, 0) 
 	return set_register(REGISTER_ALL_CONDITIONAL_TESTS, 0, param)
-	
-	
-def isVariableInRAM(value):
-	return value in variables_address_mapping.keys()
-		
-def get_address_of_variable(var_name):
-	global RAM_ADDRESS
-	
-	var_name = var_name.strip()
-
-	if not isVariableInRAM(var_name):
-		variables_address_mapping[var_name] = RAM_ADDRESS
-		RAM_ADDRESS += 1
-	return int(variables_address_mapping[var_name])	
-
-
 
 def _set_NOP():
 	_code = ""
@@ -265,8 +247,6 @@ def write_assignment(var_name, value):
 # WRITE ALL CONDITIONAL_OPERATORS_REGISTERS
 # IF SMALL THEN INSTRUCTION, JUMP_T0_LABEL LOOP
 
-
-	
 def write_add_sub_assignment(result_var_name, var1, var2, operator):
 	global code
 	#Only if both the vars are another vars in memory.
@@ -502,8 +482,6 @@ def write_arithmatic_assignment(result_var_name, var1, var2, p_op):
 		write_conditional_assignment(var1, var2, p_op)
 		return
 		
-
-
 def write_NOP():
 	global code
 	code += _set_NOP() + "\n"	
@@ -525,7 +503,6 @@ def write_text_code(p_code):
 def write_jump_back_label():
 	global code
 	code += _set_program_counter(label_position) + "\n" 
-
 
 def simplify_equation(big_eqn):
 	line = big_eqn.strip()
@@ -566,13 +543,10 @@ def simplify_equation(big_eqn):
 		for var in vars:
 			print(var)	
 		print("\n")		
-		
 		print("Operators:")
 		for op in operators:
 			print(op)	
 		print("\n")		
-		
-		
 		print("New code:\nTotal vars:")
 		#main_var_name
 		main_var_name = main_var_name.strip()
@@ -615,11 +589,10 @@ def simplify_equation(big_eqn):
 		return code
 	
 	return "\n"	
-		#if "+" in value:
-			#addition operation:
-		#	var_1, var_2 = value.split("+")
-
+	
 simplified_code = ""	
+
+loop_details = {}
 
 #First Pass, simplifiy the code.
 with open(file_name) as fp:
@@ -629,8 +602,66 @@ with open(file_name) as fp:
 		line = line.strip()
 		print("Line{}: {}".format(count, line))
 		
-		if "=" in line:
+		if "=" in line and (not line.startswith("FOR")):
 			simplified_code += simplify_equation(line)
+		elif line.startswith("FOR"):
+			all_tokens = line.split(" ")
+			loop_name = ""
+			loop_begin = ""
+			loop_end = ""
+			loop_step = ""
+			#x = "FOR I = 1 TO 10 STEP 1"
+			#z = x.split(" ")
+			#z ----->['FOR', 'I', '=', '1', 'TO', '10', 'STEP', '1']
+			print("Begin of a for loop \n\n\n\n\n\n\n\n\n")
+			if len(all_tokens) >= 6:
+				contains_loop = (all_tokens[0] == "FOR")
+				contains_equal = (all_tokens[2] == "=")
+				contains_to = (all_tokens[4] == "TO")
+				
+				if contains_loop and contains_equal and contains_to:
+					print("A valid FOR loop detected")
+					loop_name = all_tokens[1]
+					#all_tokens[2] = "="
+					loop_begin = all_tokens[3]
+					#all_tokens[4] = "TO"
+					loop_end = all_tokens[5]
+					
+					if len(all_tokens) == 8:
+						contains_step = (all_tokens[6] == "STEP")
+						if contains_step:
+							loop_step = all_tokens[7]
+							
+					#Save them.
+					loop_label_name = "LOOP_" + loop_name
+					loop_details[loop_name] = [loop_label_name, loop_begin, loop_end, loop_step]
+					
+					#I = 0
+					#LABEL LOOP1
+					
+					simplified_code += loop_name + " = " + loop_begin + "\n"
+					simplified_code += "LABEL " + loop_label_name + "\n"
+		elif line.startswith("NEXT"):
+			all_tokens = line.split(" ")
+			if len(all_tokens) == 2:
+				if all_tokens[0] == "NEXT":
+					loop_name_end = all_tokens[1]
+					if loop_name_end in loop_details.keys():
+						print("End of a valid loop")
+						p_loop_details = loop_details[loop_name_end]
+						p_loop_label = p_loop_details[0]
+						p_loop_begin = p_loop_details[1]
+						p_loop_end = p_loop_details[2]
+						p_loop_step = p_loop_details[3]
+						#I = I + 1
+						#Z = I < 10
+						#JUMP_TO_IF_LAST_OP_SMALL LOOP1
+						
+						#p_loop_details is in this format : "LOOP_1"
+						_ , id = p_loop_label.split("_")
+						simplified_code += id + " = " + id + " + " + p_loop_step + "\n"
+						simplified_code += "tmp_condition_check_var = " + id + " < " + p_loop_end + "\n"
+						simplified_code += "JUMP_TO_IF_LAST_OP_SMALL " + p_loop_label + "\n"
 		else:
 			simplified_code += line +  "\n"
 
@@ -645,10 +676,11 @@ def get_current_instruction_count():
 		for line in Lines:
 			if (not line) or (line == "") or (line == "\n"):
 				continue
+			if line.startswith("LABEL"):
+				continue
 			__count += 1
 	return __count		
 		
-
 	
 #generate_code
 #with open(file_name) as fp:
@@ -702,8 +734,7 @@ with open("simplified_code.txt") as fp:
 			#write_jump_back_label()
 		elif line.startswith("JUMP_TO_IF_LAST_OP_SMALL"):
 			write_text_code(line + "\n")
-			
-			
+						
 #print(code)		
 
 code_hex_file = "code.hex"
@@ -714,6 +745,50 @@ gen_code_file = "generated_code.txt"
 f = open(gen_code_file, "w")
 f.write(code)
 f.close()
+
+
+#Get all labels and store their position.
+index = 0
+with open(gen_code_file) as fp:
+	Lines = fp.readlines()
+	for line in Lines:
+		
+		if (not line) or (line == "") or (line == "\n"):
+			continue
+		
+		if line.startswith("LABEL"):
+			_ , label_name = line.split(" ")
+			label_name = label_name.strip()
+			label_pos = index
+			print("Found a label with name : " + str(label_name))
+			print("With Index : " + str(label_pos))
+			
+			#Save it in a list.
+			if label_name in jump_labels.keys():
+				print("Error..Redeclaration of label")
+			else:
+				jump_labels[label_name] = label_pos
+			continue
+
+		index += 1
+		
+#Now, check if there are jump_to instructions for the corresponding label.
+index = 0
+with open(gen_code_file) as fp:
+	Lines = fp.readlines()
+	for line in Lines:
+		
+		if (not line) or (line == "") or (line == "\n"):
+			continue
+			
+		if line.startswith("JUMP_TO_IF_LAST_OP_SMALL"):
+			_ , target_label = line.split(" ")
+			target_label = target_label.strip()
+			
+			if target_label in jump_labels.keys():
+				print("Label Available : " + str(target_label))
+
+		index += 1
 
 c = open(code_hex_file, "w")
 d = open(data_hex_file, "w")
@@ -735,43 +810,36 @@ with open(gen_code_file) as fp:
 			continue
 		
 		line = line.strip()
-		if line == "LABEL":
-			label_position = cc  
-			print("Label position:"+str(label_position))
-			continue
-		if line == "JUMP_T0_LABEL":
-			line = _set_program_counter(label_position)
-			line = line.strip()
 		
-		#for now dont check label names.
-		#just label keyword	
 		if line.startswith("LABEL"):
-			label_position = cc  
-			print("Label position:"+str(label_position))
+			#Just skip.
 			continue
-		elif line.startswith("JUMP_TO_IF_LAST_OP_SMALL"):
-			line = set_jump_if_last_op_small(label_position)
-			line = line.strip()
-			print("generate_code for jump if small:"+line)
+		
+		if line.startswith("JUMP_TO_IF_LAST_OP_SMALL"):
+			_ , target_label = line.split(" ")
+			target_label = target_label.strip()
+			
+			if target_label in jump_labels.keys():
+				label_position = jump_labels[target_label]
+				line = set_jump_if_last_op_small(label_position)
+				line = line.strip()
+				print("generate_code for jump if small: " + line)
+			else:
+				print("Error..Jumping")
+				continue
 			
 		string1, string2 = line.split(",")
 		
 		string1 = string1.strip()
-		ih[cc] = int(string1)#str_to_hex(string1)
-		#hex1 = hex1.lstrip("0x")
-		#c.write(hex1 + "\n")
-		
+		ih[cc] = int(string1)
 		
 		string2 = string2.strip()
-		ih2[cc] = int(string2)#str_to_hex(string2)
-		#hex2 = hex2.lstrip("0x")
-		#d.write(hex1 + "\n")
-		
+		ih2[cc] = int(string2)
+
 		
 		cc += 1
 		
 		
-print("sss")
 print(ih)
 ih.write_hex_file(c)
 ih2.write_hex_file(d)
@@ -780,7 +848,7 @@ ih2.write_hex_file(d)
 c.close()
 d.close()		
 
-print("Total ins:" + str(cc))
+print("Total instructions:" + str(cc))
 		
 		
 	

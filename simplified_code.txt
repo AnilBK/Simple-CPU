@@ -7,12 +7,13 @@ x = a1 + a3
 a0 = 10 + a0
 a1 = a1 + 20
 a1 = 6 + 9
-I = 0
-LABEL LOOP1
+I = 1
+LABEL LOOP_I
 a1 = a1 + 1
-I = I + 1
-Z = I < 10
-JUMP_TO_IF_LAST_OP_SMALL LOOP1
+a2 = a2 + 3
+I = I + a4
+tmp_condition_check_var = I < a3
+JUMP_TO_IF_LAST_OP_SMALL LOOP_I
 test_and = 8 & 1
 test_or = a3 | a4
 y0 = 5 + a0
