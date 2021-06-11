@@ -9,17 +9,10 @@ REGISTER_LOGIC_ACCUM = Register(ID_REGISTER_LOGIC_ACCUM)
 REGISTER_MEMORY_ADDRESS = Register(ID_REGISTER_MEMORY_ADDRESS)
 REGISTER_RAM = Register(ID_REGISTER_RAM)
 REGISTER_ALL_CONDITIONAL_TESTS = Register(ID_REGISTER_ALL_CONDITIONAL_TESTS)
-REGISTER_SIMD_A1 = Register(ID_REGISTER_SIMD_A1)
-REGISTER_SIMD_B1 = Register(ID_REGISTER_SIMD_B1)
-REGISTER_EXECUTE_SIMD = Register(ID_REGISTER_EXECUTE_SIMD)
-REGISTER_SIMD_A2 = Register(ID_REGISTER_SIMD_A2)
-REGISTER_SIMD_B2 = Register(ID_REGISTER_SIMD_B2)
 
 
 file_name = "custom_code.txt"
 code = ""
-post_SIMD_operation_code = ""
-
 variables_address_mapping = {}
 jump_labels = {}
 RAM_ADDRESS = 0
@@ -41,11 +34,17 @@ def get_address_of_variable(var_name):
 
 
 def emit_NOP():
-    return str(NOP) + " , " + str(0) + "\n"
+    global code
+    code += str(NOP) + " , " + str(0) + "\n" + "\n"
 
 
 def emit_HALT():
-    return str(HALT) + " , " + str(0) + "\n"
+    global code
+    code += str(HALT) + " , " + str(0) + "\n" + "\n"
+
+
+def emit_set_program_counter(pc):
+    return str(OPCODE_SET_PC) + " , " + str(pc) + "\n"
 
 
 def set_jump(LAST_OP, new_program_counter):
@@ -104,141 +103,6 @@ def write_assignment(var_name, value):
 # LOAD B, 10
 # WRITE ALL CONDITIONAL_OPERATORS_REGISTERS
 # IF SMALL THEN INSTRUCTION, JUMP_T0_LABEL LOOP
-
-# simd two adds 561
-# normal two add 549
-
-
-def write_SIMD_ADD():
-    param = encode_inputs(0, 0, ID_REGISTER_EXECUTE_SIMD, 0, 1)
-    return emit_code(ID_REGISTER_EXECUTE_SIMD, value, param) + "\n"
-
-
-def write_SIMD_EXECUTE():
-    global post_SIMD_operation_code
-    _code = ""
-    _code += write_SIMD_ADD()
-    _code += post_SIMD_operation_code
-    post_SIMD_operation_code = ""
-    _code += "\n"
-    return _code
-
-
-def write_SIMD_LOAD_1(var1, var2):
-    _code = ""
-    global post_SIMD_operation_code
-    var1 = var1.strip()
-    var2 = var2.strip()
-
-    isVar1_var_in_ram = isVariableInRAM(var1)
-    isVar2_var_in_ram = isVariableInRAM(var2)
-    print(variables_address_mapping)
-    print("var1:" + var1 + " " + str(isVar1_var_in_ram))
-    print(isVar2_var_in_ram)
-    both_are_variables_in_ram = isVar1_var_in_ram and isVar2_var_in_ram
-
-    if isVar2_var_in_ram and not isVar1_var_in_ram:
-        print("Actually var2 can/cann't be in RAM. \nVar1 should be in RAM")
-
-    if both_are_variables_in_ram:
-        var1_address = get_address_of_variable(var1)
-        var2_address = get_address_of_variable(var2)
-
-        # Load var1 to A1.
-        _code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
-        _code += set_tmp_equals_(REGISTER_RAM)
-        _code += REGISTER_SIMD_A1.equals_tmp()
-
-        # Load var2 to B1.
-        _code += REGISTER_MEMORY_ADDRESS.equals(var2_address)
-        _code += set_tmp_equals_(REGISTER_RAM)
-        _code += REGISTER_SIMD_B1.equals_tmp()
-        _code += "\n"
-
-    elif isVar1_var_in_ram:
-        var1_address = get_address_of_variable(var1)
-
-        # Load var1 to A1.
-        _code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
-        _code += set_tmp_equals_(REGISTER_RAM)
-        _code += REGISTER_SIMD_A1.equals_tmp()
-
-        # Load var2 to B1.
-        _code += REGISTER_SIMD_B1.equals(int(var2))
-        _code += "\n"
-
-    else:
-        # both are constants.
-        # Something like this 10 + 10
-        print("Constants better not use simd operations, as of now")
-        return
-
-    # assuming SIMD codes write to the var1.
-    # post SIMD operation code.This writes the values hold by the registers to corresponding addresses..
-    post_SIMD_operation_code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
-    post_SIMD_operation_code += set_tmp_equals_(REGISTER_SIMD_A1)
-    post_SIMD_operation_code += REGISTER_RAM.equals_tmp()
-    post_SIMD_operation_code += "\n"
-
-    _code += "\n"
-    return _code
-
-
-def write_SIMD_LOAD_2(var1, var2):
-    _code = ""
-    global post_SIMD_operation_code
-    var1 = var1.strip()
-    var2 = var2.strip()
-
-    isVar1_var_in_ram = isVariableInRAM(var1)
-    isVar2_var_in_ram = isVariableInRAM(var2)
-    both_are_variables_in_ram = isVar1_var_in_ram and isVar2_var_in_ram
-
-    if isVar2_var_in_ram and not isVar1_var_in_ram:
-        print("Actually var2 can/cann't be in RAM. \nVar1 should be in RAM")
-
-    if both_are_variables_in_ram:
-        var1_address = get_address_of_variable(var1)
-        var2_address = get_address_of_variable(var2)
-
-        # Load var1 to A2.
-        _code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
-        _code += set_tmp_equals_(REGISTER_RAM)
-        _code += REGISTER_SIMD_A2.equals_tmp()
-
-        # Load var2 to B2.
-        _code += REGISTER_MEMORY_ADDRESS.equals(var2_address)
-        _code += set_tmp_equals_(REGISTER_RAM)
-        _code += REGISTER_SIMD_B2.equals_tmp()
-        _code += "\n"
-
-    elif isVar1_var_in_ram:
-        var1_address = get_address_of_variable(var1)
-
-        # Load var1 to A1.
-        _code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
-        _code += set_tmp_equals_(REGISTER_RAM)
-        _code += REGISTER_SIMD_A2.equals_tmp()
-
-        # Load var2 to B1.
-        _code += REGISTER_SIMD_B2.equals(int(var2))
-        _code += "\n"
-
-    else:
-        # both are constants.
-        # Something like this 10 + 10
-        print("Constants better not use simd operations, as of now")
-        return
-
-    # assuming SIMD codes write to the var1.
-    # post SIMD operation code.This writes the values hold by the registers to corresponding addresses..
-    post_SIMD_operation_code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
-    post_SIMD_operation_code += set_tmp_equals_(REGISTER_SIMD_A2)
-    post_SIMD_operation_code += REGISTER_RAM.equals_tmp()
-    post_SIMD_operation_code += "\n"
-
-    _code += "\n"
-    return _code
 
 
 # Load variables into registers wether they are in variables names or a constant.
@@ -338,20 +202,6 @@ def write_arithmatic_assignment(result_var_name, var1, var2, p_op):
         return
 
 
-def write_NOP():
-    global code
-    code += emit_NOP() + "\n"
-
-
-def write_halt():
-    global code
-    code += emit_HALT() + "\n"
-
-
-def _set_program_counter(pc):
-    return str(OPCODE_SET_PC) + " , " + str(pc) + "\n"
-
-
 # write in ascii,probably to modify it next pass.
 def write_text_code(p_code):
     global code
@@ -360,7 +210,7 @@ def write_text_code(p_code):
 
 def write_jump_back_label():
     global code
-    code += _set_program_counter(label_position) + "\n"
+    code += emit_set_program_counter(label_position) + "\n"
 
 
 def simplify_equation(big_eqn):
@@ -609,9 +459,9 @@ with open("simplified_code.txt") as fp:
                 write_assignment(var_name, value)
 
         if line == "NOP":
-            write_NOP()
+            emit_NOP()
         elif line == "HALT":
-            write_halt()
+            emit_HALT()
         elif line.startswith("LABEL"):
             # Do it next pass.
             # label_position = count - 1
@@ -622,26 +472,6 @@ with open("simplified_code.txt") as fp:
             # write_jump_back_label()
         elif line.startswith("JUMP_TO_IF_LAST_OP_SMALL"):
             write_text_code(line + "\n")
-        elif line.startswith("SIMD_LOAD_1"):
-            # SIMD_ADD a1,1 = a1 = a1 + 1
-            # Separate the variables.
-            _var1, var2 = line.split(",")
-            # Remove SIMD_ADD to get var1.
-            _, var1 = _var1.split(" ")
-            var1 = var1.strip()
-            var2 = var2.strip()
-            write_text_code(write_SIMD_LOAD_1(var1, var2))
-        elif line.startswith("SIMD_LOAD_2"):
-            # SIMD_ADD a1,1 = a1 = a1 + 1
-            # Separate the variables.
-            _var1, var2 = line.split(",")
-            # Remove SIMD_ADD to get var1.
-            _, var1 = _var1.split(" ")
-            var1 = var1.strip()
-            var2 = var2.strip()
-            write_text_code(write_SIMD_LOAD_2(var1, var2))
-        elif line.startswith("SIMD_ADD"):
-            write_text_code(write_SIMD_EXECUTE())
 
 # print(code)
 
