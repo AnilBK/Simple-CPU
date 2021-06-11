@@ -2972,6 +2972,111 @@ Its own value will be modified next clock.</string>
       <elementAttributes/>
       <pos x="12980" y="2260"/>
     </visualElement>
+    <visualElement>
+      <elementName>Register</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>A</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>8</int>
+        </entry>
+      </elementAttributes>
+      <pos x="12240" y="1480"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Add</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>8</int>
+        </entry>
+      </elementAttributes>
+      <pos x="12680" y="1180"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>8</int>
+        </entry>
+        <entry>
+          <string>InDefault</string>
+          <value v="1" z="false"/>
+        </entry>
+      </elementAttributes>
+      <pos x="12560" y="1240"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Text</elementName>
+      <elementAttributes>
+        <entry>
+          <string>textFontSize</string>
+          <int>48</int>
+        </entry>
+        <entry>
+          <string>Description</string>
+          <string>Inc Operation</string>
+        </entry>
+      </elementAttributes>
+      <pos x="12860" y="1120"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes/>
+      <pos x="12560" y="1280"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes/>
+      <pos x="12920" y="1200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Driver</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>8</int>
+        </entry>
+      </elementAttributes>
+      <pos x="12120" y="1480"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Clock</elementName>
+      <elementAttributes>
+        <entry>
+          <string>runRealTime</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>Frequency</string>
+          <int>2</int>
+        </entry>
+      </elementAttributes>
+      <pos x="11620" y="1300"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>8</int>
+        </entry>
+        <entry>
+          <string>intFormat</string>
+          <intFormat>dec</intFormat>
+        </entry>
+      </elementAttributes>
+      <pos x="12580" y="1500"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes/>
+      <pos x="11720" y="1440"/>
+    </visualElement>
   </visualElements>
   <wires>
     <wire>
@@ -3041,6 +3146,10 @@ Its own value will be modified next clock.</string>
     <wire>
       <p1 x="18020" y="1280"/>
       <p2 x="18160" y="1280"/>
+    </wire>
+    <wire>
+      <p1 x="12560" y="1280"/>
+      <p2 x="12600" y="1280"/>
     </wire>
     <wire>
       <p1 x="13480" y="0"/>
@@ -3229,6 +3338,10 @@ Its own value will be modified next clock.</string>
     <wire>
       <p1 x="18220" y="1300"/>
       <p2 x="18260" y="1300"/>
+    </wire>
+    <wire>
+      <p1 x="11620" y="1300"/>
+      <p2 x="11680" y="1300"/>
     </wire>
     <wire>
       <p1 x="13880" y="20"/>
@@ -3619,6 +3732,10 @@ Its own value will be modified next clock.</string>
       <p2 x="14560" y="1100"/>
     </wire>
     <wire>
+      <p1 x="12060" y="1100"/>
+      <p2 x="12820" y="1100"/>
+    </wire>
+    <wire>
       <p1 x="13380" y="3660"/>
       <p2 x="15540" y="3660"/>
     </wire>
@@ -3851,6 +3968,10 @@ Its own value will be modified next clock.</string>
       <p2 x="15180" y="1380"/>
     </wire>
     <wire>
+      <p1 x="11860" y="1380"/>
+      <p2 x="12960" y="1380"/>
+    </wire>
+    <wire>
       <p1 x="12560" y="3940"/>
       <p2 x="12600" y="3940"/>
     </wire>
@@ -4053,6 +4174,14 @@ Its own value will be modified next clock.</string>
     <wire>
       <p1 x="15160" y="1400"/>
       <p2 x="15180" y="1400"/>
+    </wire>
+    <wire>
+      <p1 x="11680" y="1400"/>
+      <p2 x="12220" y="1400"/>
+    </wire>
+    <wire>
+      <p1 x="12220" y="1400"/>
+      <p2 x="12960" y="1400"/>
     </wire>
     <wire>
       <p1 x="12780" y="3960"/>
@@ -4491,6 +4620,14 @@ Its own value will be modified next clock.</string>
       <p2 x="18620" y="1180"/>
     </wire>
     <wire>
+      <p1 x="12400" y="1180"/>
+      <p2 x="12680" y="1180"/>
+    </wire>
+    <wire>
+      <p1 x="12740" y="1180"/>
+      <p2 x="12820" y="1180"/>
+    </wire>
+    <wire>
       <p1 x="14400" y="-160"/>
       <p2 x="14540" y="-160"/>
     </wire>
@@ -4521,6 +4658,14 @@ Its own value will be modified next clock.</string>
     <wire>
       <p1 x="15160" y="1440"/>
       <p2 x="15180" y="1440"/>
+    </wire>
+    <wire>
+      <p1 x="11720" y="1440"/>
+      <p2 x="11940" y="1440"/>
+    </wire>
+    <wire>
+      <p1 x="11940" y="1440"/>
+      <p2 x="12120" y="1440"/>
     </wire>
     <wire>
       <p1 x="12780" y="4000"/>
@@ -4617,6 +4762,14 @@ Its own value will be modified next clock.</string>
     <wire>
       <p1 x="18480" y="1200"/>
       <p2 x="18620" y="1200"/>
+    </wire>
+    <wire>
+      <p1 x="12580" y="1200"/>
+      <p2 x="12680" y="1200"/>
+    </wire>
+    <wire>
+      <p1 x="12740" y="1200"/>
+      <p2 x="12920" y="1200"/>
     </wire>
     <wire>
       <p1 x="14360" y="-180"/>
@@ -4743,6 +4896,10 @@ Its own value will be modified next clock.</string>
       <p2 x="18620" y="1220"/>
     </wire>
     <wire>
+      <p1 x="12600" y="1220"/>
+      <p2 x="12680" y="1220"/>
+    </wire>
+    <wire>
       <p1 x="12000" y="-200"/>
       <p2 x="13380" y="-200"/>
     </wire>
@@ -4799,6 +4956,14 @@ Its own value will be modified next clock.</string>
       <p2 x="14840" y="1480"/>
     </wire>
     <wire>
+      <p1 x="12060" y="1480"/>
+      <p2 x="12100" y="1480"/>
+    </wire>
+    <wire>
+      <p1 x="12140" y="1480"/>
+      <p2 x="12240" y="1480"/>
+    </wire>
+    <wire>
       <p1 x="14840" y="1480"/>
       <p2 x="14900" y="1480"/>
     </wire>
@@ -4847,6 +5012,10 @@ Its own value will be modified next clock.</string>
       <p2 x="15180" y="1240"/>
     </wire>
     <wire>
+      <p1 x="12560" y="1240"/>
+      <p2 x="12580" y="1240"/>
+    </wire>
+    <wire>
       <p1 x="13880" y="-220"/>
       <p2 x="13960" y="-220"/>
     </wire>
@@ -4860,7 +5029,7 @@ Its own value will be modified next clock.</string>
     </wire>
     <wire>
       <p1 x="14740" y="-220"/>
-      <p2 x="14880" y="-220"/>
+      <p2 x="15380" y="-220"/>
     </wire>
     <wire>
       <p1 x="13680" y="-220"/>
@@ -4871,16 +5040,36 @@ Its own value will be modified next clock.</string>
       <p2 x="13620" y="-220"/>
     </wire>
     <wire>
-      <p1 x="14880" y="-220"/>
-      <p2 x="15380" y="-220"/>
-    </wire>
-    <wire>
       <p1 x="13960" y="-220"/>
       <p2 x="13980" y="-220"/>
     </wire>
     <wire>
       <p1 x="14260" y="-220"/>
       <p2 x="14400" y="-220"/>
+    </wire>
+    <wire>
+      <p1 x="12300" y="1500"/>
+      <p2 x="12400" y="1500"/>
+    </wire>
+    <wire>
+      <p1 x="14560" y="1500"/>
+      <p2 x="14680" y="1500"/>
+    </wire>
+    <wire>
+      <p1 x="14740" y="1500"/>
+      <p2 x="14820" y="1500"/>
+    </wire>
+    <wire>
+      <p1 x="12220" y="1500"/>
+      <p2 x="12240" y="1500"/>
+    </wire>
+    <wire>
+      <p1 x="14820" y="1500"/>
+      <p2 x="14920" y="1500"/>
+    </wire>
+    <wire>
+      <p1 x="12400" y="1500"/>
+      <p2 x="12580" y="1500"/>
     </wire>
     <wire>
       <p1 x="18920" y="2780"/>
@@ -4901,18 +5090,6 @@ Its own value will be modified next clock.</string>
     <wire>
       <p1 x="13880" y="2780"/>
       <p2 x="13900" y="2780"/>
-    </wire>
-    <wire>
-      <p1 x="14560" y="1500"/>
-      <p2 x="14680" y="1500"/>
-    </wire>
-    <wire>
-      <p1 x="14740" y="1500"/>
-      <p2 x="14820" y="1500"/>
-    </wire>
-    <wire>
-      <p1 x="14820" y="1500"/>
-      <p2 x="14920" y="1500"/>
     </wire>
     <wire>
       <p1 x="12960" y="4060"/>
@@ -5171,6 +5348,10 @@ Its own value will be modified next clock.</string>
       <p2 x="14800" y="1520"/>
     </wire>
     <wire>
+      <p1 x="11940" y="1520"/>
+      <p2 x="12240" y="1520"/>
+    </wire>
+    <wire>
       <p1 x="14800" y="1520"/>
       <p2 x="14960" y="1520"/>
     </wire>
@@ -5331,6 +5512,10 @@ Its own value will be modified next clock.</string>
       <p2 x="12820" y="4040"/>
     </wire>
     <wire>
+      <p1 x="12820" y="1100"/>
+      <p2 x="12820" y="1180"/>
+    </wire>
+    <wire>
       <p1 x="15380" y="2520"/>
       <p2 x="15380" y="2660"/>
     </wire>
@@ -5384,11 +5569,15 @@ Its own value will be modified next clock.</string>
     </wire>
     <wire>
       <p1 x="14880" y="-240"/>
-      <p2 x="14880" y="-200"/>
+      <p2 x="14880" y="-220"/>
     </wire>
     <wire>
       <p1 x="14880" y="40"/>
       <p2 x="14880" y="80"/>
+    </wire>
+    <wire>
+      <p1 x="14880" y="-220"/>
+      <p2 x="14880" y="-200"/>
     </wire>
     <wire>
       <p1 x="17440" y="1060"/>
@@ -5671,6 +5860,10 @@ Its own value will be modified next clock.</string>
       <p2 x="14960" y="-60"/>
     </wire>
     <wire>
+      <p1 x="12400" y="1180"/>
+      <p2 x="12400" y="1500"/>
+    </wire>
+    <wire>
       <p1 x="13940" y="2260"/>
       <p2 x="13940" y="2280"/>
     </wire>
@@ -5809,6 +6002,10 @@ Its own value will be modified next clock.</string>
     <wire>
       <p1 x="17060" y="2420"/>
       <p2 x="17060" y="2460"/>
+    </wire>
+    <wire>
+      <p1 x="11940" y="1440"/>
+      <p2 x="11940" y="1520"/>
     </wire>
     <wire>
       <p1 x="13480" y="2540"/>
@@ -6123,6 +6320,10 @@ Its own value will be modified next clock.</string>
       <p2 x="14620" y="2460"/>
     </wire>
     <wire>
+      <p1 x="12060" y="1100"/>
+      <p2 x="12060" y="1480"/>
+    </wire>
+    <wire>
       <p1 x="16160" y="2160"/>
       <p2 x="16160" y="2460"/>
     </wire>
@@ -6133,6 +6334,10 @@ Its own value will be modified next clock.</string>
     <wire>
       <p1 x="15140" y="2540"/>
       <p2 x="15140" y="2600"/>
+    </wire>
+    <wire>
+      <p1 x="12580" y="1200"/>
+      <p2 x="12580" y="1240"/>
     </wire>
     <wire>
       <p1 x="14120" y="2520"/>
@@ -6283,6 +6488,10 @@ Its own value will be modified next clock.</string>
       <p2 x="12600" y="3980"/>
     </wire>
     <wire>
+      <p1 x="12600" y="1220"/>
+      <p2 x="12600" y="1280"/>
+    </wire>
+    <wire>
       <p1 x="17720" y="2200"/>
       <p2 x="17720" y="2300"/>
     </wire>
@@ -6353,6 +6562,10 @@ Its own value will be modified next clock.</string>
     <wire>
       <p1 x="13140" y="2060"/>
       <p2 x="13140" y="3040"/>
+    </wire>
+    <wire>
+      <p1 x="12120" y="1440"/>
+      <p2 x="12120" y="1460"/>
     </wire>
     <wire>
       <p1 x="13660" y="880"/>
@@ -6571,6 +6784,10 @@ Its own value will be modified next clock.</string>
       <p2 x="16800" y="2680"/>
     </wire>
     <wire>
+      <p1 x="11680" y="1300"/>
+      <p2 x="11680" y="1400"/>
+    </wire>
+    <wire>
       <p1 x="18340" y="1180"/>
       <p2 x="18340" y="1280"/>
     </wire>
@@ -6677,6 +6894,10 @@ Its own value will be modified next clock.</string>
     <wire>
       <p1 x="12220" y="1880"/>
       <p2 x="12220" y="2060"/>
+    </wire>
+    <wire>
+      <p1 x="12220" y="1400"/>
+      <p2 x="12220" y="1500"/>
     </wire>
     <wire>
       <p1 x="12220" y="2060"/>

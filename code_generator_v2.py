@@ -1,65 +1,28 @@
+from constants import *
+from register import *
+
+REGISTER_A = Register(ID_REGISTER_A)
+REGISTER_B = Register(ID_REGISTER_B)
+REGISTER_C = Register(ID_REGISTER_C)
+REGISTER_ALU_ACCUM = Register(ID_REGISTER_ALU_ACCUM)
+REGISTER_LOGIC_ACCUM = Register(ID_REGISTER_LOGIC_ACCUM)
+REGISTER_MEMORY_ADDRESS = Register(ID_REGISTER_MEMORY_ADDRESS)
+REGISTER_RAM = Register(ID_REGISTER_RAM)
+REGISTER_ALL_CONDITIONAL_TESTS = Register(ID_REGISTER_ALL_CONDITIONAL_TESTS)
+REGISTER_SIMD_A1 = Register(ID_REGISTER_SIMD_A1)
+REGISTER_SIMD_B1 = Register(ID_REGISTER_SIMD_B1)
+REGISTER_EXECUTE_SIMD = Register(ID_REGISTER_EXECUTE_SIMD)
+REGISTER_SIMD_A2 = Register(ID_REGISTER_SIMD_A2)
+REGISTER_SIMD_B2 = Register(ID_REGISTER_SIMD_B2)
+
+
 file_name = "custom_code.txt"
-
-RAM_ADDRESS = 0
-
 code = ""
 post_SIMD_operation_code = ""
 
-# CONSTANTS.
-REGISTER_A = 0
-REGISTER_B = 1
-REGISTER_C = 2
-REGISTER_ALU_ACCUM = 3
-REGISTER_LOGIC_ACCUM = 4
-REGISTER_MEMORY_ADDRESS = 5
-REGISTER_RAM = 6
-REGISTER_ALL_CONDITIONAL_TESTS = 7
-REGISTER_SIMD_A1 = 8
-REGISTER_SIMD_B1 = 9
-REGISTER_EXECUTE_SIMD = 10
-REGISTER_SIMD_A2 = 11
-REGISTER_SIMD_B2 = 12
-
-OPCODE_STORE_OPERATION = 0
-OPCODE_EXECUTE_OPERATION = 1
-OPCODE_SET_PC = 2
-OPCODE_JUMP_TO_IF_LAST_OP_SMALL = 3
-OPCODE_JUMP_TO_IF_LAST_OP_GREATER = 4
-OPCODE_JUMP_TO_IF_LAST_OP_EQUAL = 5
-
-from register import Register
-
-A_REGISTER = Register(REGISTER_A)
-B_REGISTER = Register(REGISTER_B)
-C_REGISTER = Register(REGISTER_C)
-
-NOP = 30
-HALT = 31
-
-BUILT_IN_OPERATORS = ["+", "-", "&", "|", ">", "<", ":"]
-# (a == b) is represented as (a : b) .
-# CONDITIONAL_OPERATORS = ['>', '<', ':']
-
 variables_address_mapping = {}
 jump_labels = {}
-
-####INSTRUCTION FORMAT-	 ( 1 ) ( 2 ) (3 4 5 6) ( 7) ( 8 ) th bit from left.
-####						L-----|-----|------|-----|-GLOBAL INPUT LINE = INPUT STREAM IF 0.IF 1,INPUT LINE = TEMP REG OUTPUT.
-####							  L-----|------|-----|-STORE TO TMP REGISTER. A,B,C ETC CAN WRITE TO OUTPUT LINE,AND IS STORED TO TMP REGISTER.
-####							        L------|-----|-INDEX OF REGISTER TO PERFORM OPERATIONS ON.
-####									       L-----|-REGISTERS WRITE TO OUTPUT LINE IF 1.
-####											     L-REGISTERS READ FROM INPUT LINE IF 1.
-
-
-def is_number(text):
-    for i in range(0, len(text)):
-        if i == 0:
-            # is_digit() func doesnt take negative numbers into consideration.
-            if text[i] == "-":
-                continue
-        if not text[i].isdigit():
-            return False
-    return True
+RAM_ADDRESS = 0
 
 
 def isVariableInRAM(value):
@@ -77,214 +40,17 @@ def get_address_of_variable(var_name):
     return int(variables_address_mapping[var_name])
 
 
-def set_input_line_to_ifstream(s):
-    p_s = s << 7
-    return p_s
+def emit_NOP():
+    return str(NOP) + " , " + str(0) + "\n"
 
 
-def set_write_to_tmp_reg(write_to_temp):
-    p_w = write_to_temp << 6
-    return p_w
-
-
-def set_register_index(idx):
-    p_idx = idx << 2
-    return p_idx
-
-
-def set_w(w):
-    if w > 1:
-        print("Error!Way to large")
-    p_w = w << 1
-    return p_w
-
-
-def set_r(r):
-    if r > 1:
-        print("Error!Way to large")
-    return r
-
-
-def get_combined_output(
-    set_input_ifstream,
-    write_to_temp,
-    index,
-    reg_write_to_out_line,
-    reg_read_from_in_line,
-):
-    bit1 = set_input_line_to_ifstream(set_input_ifstream)
-    bit2 = set_write_to_tmp_reg(write_to_temp)
-    bit3_4_5_6 = set_register_index(index)
-    bit7 = set_w(reg_write_to_out_line)
-    bit8 = set_r(reg_read_from_in_line)
-
-    return bit1 + bit2 + bit3_4_5_6 + bit7 + bit8
-
-
-def set_register(REGISTER_INDEX, value, param):
-    _code = ""
-    _code += str(OPCODE_STORE_OPERATION) + " , " + str(param).strip() + "\n"
-    _code += str(OPCODE_EXECUTE_OPERATION) + " , " + str(value).strip() + "\n"
-    return _code
-
-
-# The main register writers.
-def set_register_value(REGISTER_NAME, value):
-    param = get_combined_output(0, 0, REGISTER_NAME, 0, 1)
-    # Registers reads from input line.
-    return set_register(REGISTER_NAME, value, param)
-
-
-def set_register_equals_tmp(REGISTER_NAME):
-    param = get_combined_output(1, 0, REGISTER_NAME, 0, 1)
-    # Registers reads from input line.
-    return set_register(REGISTER_NAME, 0, param)
-
-
-def set_tmp_equals_register(REGISTER_NAME):
-    param = get_combined_output(0, 1, REGISTER_NAME, 1, 0)
-    return set_register(REGISTER_NAME, 0, param)
+def emit_HALT():
+    return str(HALT) + " , " + str(0) + "\n"
 
 
 def set_jump(LAST_OP, new_program_counter):
-    _code = ""
     new_program_counter = str(new_program_counter).strip()
-    _code += str(LAST_OP) + " , " + new_program_counter + "\n"
-    return _code
-
-
-# Set registers to the given value.
-
-
-def set_B(value):
-    return set_register_value(REGISTER_B, value)
-
-
-def set_C(value):
-    return set_register_value(REGISTER_C, value)
-
-
-def set_Memory_Address(value):
-    return set_register_value(REGISTER_MEMORY_ADDRESS, value)
-
-
-def set_RAM(value):
-    return set_register_value(REGISTER_RAM, value)
-
-
-def set_B_equals_tmp():
-    return set_register_equals_tmp(REGISTER_B)
-
-
-def set_C_equals_tmp():
-    return set_register_equals_tmp(REGISTER_C)
-
-
-def set_Memory_Address_equals_tmp():
-    return set_register_equals_tmp(REGISTER_MEMORY_ADDRESS)
-
-
-def set_RAM_equals_tmp():
-    return set_register_equals_tmp(REGISTER_RAM)
-
-
-# Set the value of tmp register to the value of the given register.
-def set_tmp_equals_A():
-    return set_tmp_equals_register(REGISTER_A)
-
-
-def set_tmp_equals_B():
-    return set_tmp_equals_register(REGISTER_B)
-
-
-def set_tmp_equals_C():
-    return set_tmp_equals_register(REGISTER_C)
-
-
-def set_tmp_equals_Memory_Address():
-    return set_tmp_equals_register(REGISTER_MEMORY_ADDRESS)
-
-
-def set_tmp_equals_RAM():
-    return set_tmp_equals_register(REGISTER_RAM)
-
-
-# Can't be set.
-# They are for internal use.
-# REGISTER_ALU_ACCUM = 3
-# REGISTER_LOGIC_ACCUM = 4
-def set_tmp_equals_ALU_ACCUM(op=0):
-    param = get_combined_output(0, 1, REGISTER_ALU_ACCUM, 1, 0)
-    return set_register(REGISTER_ALU_ACCUM, op, param)
-
-
-def set_tmp_equals_LOGIC_ACCUM(op=0):
-    param = get_combined_output(0, 1, REGISTER_LOGIC_ACCUM, 1, 0)
-    return set_register(REGISTER_LOGIC_ACCUM, op, param)
-
-
-###SIMD SETTERS
-def set_SIMD_A1(value):
-    return set_register_value(REGISTER_SIMD_A1, value)
-
-
-def set_SIMD_B1(value):
-    return set_register_value(REGISTER_SIMD_B1, value)
-
-
-def set_SIMD_A2(value):
-    return set_register_value(REGISTER_SIMD_A2, value)
-
-
-def set_SIMD_B2(value):
-    return set_register_value(REGISTER_SIMD_B2, value)
-
-
-def set_SIMD_A1_equals_tmp():
-    return set_register_equals_tmp(REGISTER_SIMD_A1)
-
-
-def set_SIMD_B1_equals_tmp():
-    return set_register_equals_tmp(REGISTER_SIMD_B1)
-
-
-def set_SIMD_A2_equals_tmp():
-    return set_register_equals_tmp(REGISTER_SIMD_A2)
-
-
-def set_SIMD_B2_equals_tmp():
-    return set_register_equals_tmp(REGISTER_SIMD_B2)
-
-
-def set_tmp_equals_SIMD_A1():
-    return set_tmp_equals_register(REGISTER_SIMD_A1)
-
-
-def set_tmp_equals_SIMD_B1():
-    return set_tmp_equals_register(REGISTER_SIMD_B1)
-
-
-def set_tmp_equals_SIMD_A2():
-    return set_tmp_equals_register(REGISTER_SIMD_A2)
-
-
-def set_tmp_equals_SIMD_B2():
-    return set_tmp_equals_register(REGISTER_SIMD_B2)
-
-
-###END OF SIMD SETTERS.
-
-
-def _set_NOP():
-    _code = ""
-    _code += str(NOP) + " , " + str(0) + "\n"
-    return _code
-
-
-def _set_HALT():
-    _code = ""
-    _code += str(HALT) + " , " + str(0) + "\n"
-    return _code
+    return str(LAST_OP) + " , " + new_program_counter + "\n"
 
 
 def set_jump_if_last_op_small(new_program_counter):
@@ -301,8 +67,8 @@ def set_jump_if_last_op_equal(new_program_counter):
 
 # stores all the logical assignments in their own registers.
 def set_all_logical_comparisions():
-    param = get_combined_output(0, 0, REGISTER_ALL_CONDITIONAL_TESTS, 1, 0)
-    return set_register(REGISTER_ALL_CONDITIONAL_TESTS, 0, param)
+    param = encode_inputs(0, 0, ID_REGISTER_ALL_CONDITIONAL_TESTS, 1, 0)
+    return emit_code(0, param)
 
 
 def write_assignment(var_name, value):
@@ -318,15 +84,15 @@ def write_assignment(var_name, value):
     print(variables_address_mapping)
     # value can not only be number but another variable itself.
     if is_number(value):
-        code += set_Memory_Address(address)
-        code += set_RAM(value) + "\n"
+        code += REGISTER_MEMORY_ADDRESS.equals(address)
+        code += REGISTER_RAM.equals(value) + "\n"
     else:
         print("Value is another variable:-->" + value)
         values_address = get_address_of_variable(value)
-        code += set_Memory_Address(values_address)
-        code += set_tmp_equals_RAM()
-        code += set_Memory_Address(address)
-        code += set_RAM_equals_tmp() + "\n"
+        code += REGISTER_MEMORY_ADDRESS.equals(values_address)
+        code += set_tmp_equals_(REGISTER_RAM)
+        code += REGISTER_MEMORY_ADDRESS.equals(address)
+        code += REGISTER_RAM.equals_tmp() + "\n"
 
 
 # IF A < 10,
@@ -344,11 +110,8 @@ def write_assignment(var_name, value):
 
 
 def write_SIMD_ADD():
-    _code = ""
-    param = get_combined_output(0, 0, REGISTER_EXECUTE_SIMD, 0, 1)
-    _code += set_register(REGISTER_EXECUTE_SIMD, value, param)
-    _code += "\n"
-    return _code
+    param = encode_inputs(0, 0, ID_REGISTER_EXECUTE_SIMD, 0, 1)
+    return emit_code(ID_REGISTER_EXECUTE_SIMD, value, param) + "\n"
 
 
 def write_SIMD_EXECUTE():
@@ -382,26 +145,26 @@ def write_SIMD_LOAD_1(var1, var2):
         var2_address = get_address_of_variable(var2)
 
         # Load var1 to A1.
-        _code += set_Memory_Address(var1_address)
-        _code += set_tmp_equals_RAM()
-        _code += set_SIMD_A1_equals_tmp()
+        _code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
+        _code += set_tmp_equals_(REGISTER_RAM)
+        _code += REGISTER_SIMD_A1.equals_tmp()
 
         # Load var2 to B1.
-        _code += set_Memory_Address(var2_address)
-        _code += set_tmp_equals_RAM()
-        _code += set_SIMD_B1_equals_tmp()
+        _code += REGISTER_MEMORY_ADDRESS.equals(var2_address)
+        _code += set_tmp_equals_(REGISTER_RAM)
+        _code += REGISTER_SIMD_B1.equals_tmp()
         _code += "\n"
 
     elif isVar1_var_in_ram:
         var1_address = get_address_of_variable(var1)
 
         # Load var1 to A1.
-        _code += set_Memory_Address(var1_address)
-        _code += set_tmp_equals_RAM()
-        _code += set_SIMD_A1_equals_tmp()
+        _code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
+        _code += set_tmp_equals_(REGISTER_RAM)
+        _code += REGISTER_SIMD_A1.equals_tmp()
 
         # Load var2 to B1.
-        _code += set_SIMD_B1(int(var2))
+        _code += REGISTER_SIMD_B1.equals(int(var2))
         _code += "\n"
 
     else:
@@ -412,9 +175,9 @@ def write_SIMD_LOAD_1(var1, var2):
 
     # assuming SIMD codes write to the var1.
     # post SIMD operation code.This writes the values hold by the registers to corresponding addresses..
-    post_SIMD_operation_code += set_Memory_Address(var1_address)
-    post_SIMD_operation_code += set_tmp_equals_SIMD_A1()
-    post_SIMD_operation_code += set_RAM_equals_tmp()
+    post_SIMD_operation_code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
+    post_SIMD_operation_code += set_tmp_equals_(REGISTER_SIMD_A1)
+    post_SIMD_operation_code += REGISTER_RAM.equals_tmp()
     post_SIMD_operation_code += "\n"
 
     _code += "\n"
@@ -439,26 +202,26 @@ def write_SIMD_LOAD_2(var1, var2):
         var2_address = get_address_of_variable(var2)
 
         # Load var1 to A2.
-        _code += set_Memory_Address(var1_address)
-        _code += set_tmp_equals_RAM()
-        _code += set_SIMD_A2_equals_tmp()
+        _code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
+        _code += set_tmp_equals_(REGISTER_RAM)
+        _code += REGISTER_SIMD_A2.equals_tmp()
 
         # Load var2 to B2.
-        _code += set_Memory_Address(var2_address)
-        _code += set_tmp_equals_RAM()
-        _code += set_SIMD_B2_equals_tmp()
+        _code += REGISTER_MEMORY_ADDRESS.equals(var2_address)
+        _code += set_tmp_equals_(REGISTER_RAM)
+        _code += REGISTER_SIMD_B2.equals_tmp()
         _code += "\n"
 
     elif isVar1_var_in_ram:
         var1_address = get_address_of_variable(var1)
 
         # Load var1 to A1.
-        _code += set_Memory_Address(var1_address)
-        _code += set_tmp_equals_RAM()
-        _code += set_SIMD_A2_equals_tmp()
+        _code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
+        _code += set_tmp_equals_(REGISTER_RAM)
+        _code += REGISTER_SIMD_A2.equals_tmp()
 
         # Load var2 to B1.
-        _code += set_SIMD_B2(int(var2))
+        _code += REGISTER_SIMD_B2.equals(int(var2))
         _code += "\n"
 
     else:
@@ -469,228 +232,87 @@ def write_SIMD_LOAD_2(var1, var2):
 
     # assuming SIMD codes write to the var1.
     # post SIMD operation code.This writes the values hold by the registers to corresponding addresses..
-    post_SIMD_operation_code += set_Memory_Address(var1_address)
-    post_SIMD_operation_code += set_tmp_equals_SIMD_A2()
-    post_SIMD_operation_code += set_RAM_equals_tmp()
+    post_SIMD_operation_code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
+    post_SIMD_operation_code += set_tmp_equals_(REGISTER_SIMD_A2)
+    post_SIMD_operation_code += REGISTER_RAM.equals_tmp()
     post_SIMD_operation_code += "\n"
 
     _code += "\n"
     return _code
 
 
-def write_add_sub_assignment(result_var_name, var1, var2, operator):
+# Load variables into registers wether they are in variables names or a constant.
+def load_variables_into_registers(var1, var2):
     global code
-    # Only if both the vars are another vars in memory.
-    result_address = get_address_of_variable(result_var_name)
     var1 = var1.strip()
     var2 = var2.strip()
 
+    isVar1_var_in_ram = isVariableInRAM(var1)
+    isVar2_var_in_ram = isVariableInRAM(var2)
+
+    # Load var1 to A.
+    # var1 + var2
+    if isVar1_var_in_ram:
+        var1_address = get_address_of_variable(var1)
+        code += REGISTER_MEMORY_ADDRESS.equals(var1_address)
+        code += set_tmp_equals_(REGISTER_RAM)
+        code += REGISTER_A.equals_tmp()
+    else:
+        # Is a constant.
+        # 10 + var2
+        code += REGISTER_A.equals(int(var1))
+
+    # Load var2 to B.
+    # Something like this var1 + var2.
+    if isVar2_var_in_ram:
+        var2_address = get_address_of_variable(var2)
+        code += REGISTER_MEMORY_ADDRESS.equals(var2_address)
+        code += set_tmp_equals_(REGISTER_RAM)
+        code += REGISTER_B.equals_tmp()
+    else:
+        code += REGISTER_B.equals(int(var2))
+
+
+def write_add_sub_assignment(result_var_name, var1, var2, operator):
     op = 0
     if operator == "+":
         op = 0
     if operator == "-":
         op = 1
 
-    isVar1_var_in_ram = isVariableInRAM(var1)
-    isVar2_var_in_ram = isVariableInRAM(var2)
-    both_are_variables_in_ram = isVar1_var_in_ram and isVar2_var_in_ram
+    result_address = get_address_of_variable(result_var_name)
+    load_variables_into_registers(var1, var2)
 
-    # Simplify a1+=1 or a1 = a1 + 1
-
-    if both_are_variables_in_ram:
-        var1_address = get_address_of_variable(var1)
-        var2_address = get_address_of_variable(var2)
-
-        # Load var1 to A.
-        code += set_Memory_Address(var1_address)
-        code += set_tmp_equals_RAM()
-        code += A_REGISTER.set_value_equals_tmp()
-
-        code += set_Memory_Address(var2_address)
-        code += set_tmp_equals_RAM()
-        code += set_B_equals_tmp()
-
-        code += set_Memory_Address(result_address)
-        code += set_tmp_equals_ALU_ACCUM(op)
-        code += set_RAM_equals_tmp()
-        code += "\n"
-    elif isVar1_var_in_ram:
-        # Something like this a1 + 10
-        var1_address = get_address_of_variable(var1)
-        # Load a1 to A.
-        code += set_Memory_Address(var1_address)
-        code += set_tmp_equals_RAM()
-        code += A_REGISTER.set_value_equals_tmp()
-
-        code += set_B(int(var2))
-
-        code += set_Memory_Address(result_address)
-        code += set_tmp_equals_ALU_ACCUM(op)
-        code += set_RAM_equals_tmp()
-        code += "\n"
-    elif isVar2_var_in_ram:
-        # Something like this 10 - a1
-        var2_address = get_address_of_variable(var2)
-        # Load a1 to A.
-        code += set_Memory_Address(var2_address)
-        code += set_tmp_equals_RAM()
-        code += set_B_equals_tmp()
-
-        code += A_REGISTER.set_value(int(var1))
-
-        code += set_Memory_Address(result_address)
-        code += set_tmp_equals_ALU_ACCUM(op)
-        code += set_RAM_equals_tmp()
-        code += "\n"
-    else:
-        # both are constants.
-        # Something like this 10 + 10
-        code += A_REGISTER.set_value(int(var1))
-        code += set_B(int(var2))
-
-        code += set_Memory_Address(result_address)
-        code += set_tmp_equals_ALU_ACCUM(op)
-        code += set_RAM_equals_tmp()
-        code += "\n"
+    global code
+    code += REGISTER_MEMORY_ADDRESS.equals(result_address)
+    code += set_tmp_equals_ALU_ACCUM(op)
+    code += REGISTER_RAM.equals_tmp()
+    code += "\n"
 
 
 def write_and_or_assignment(result_var_name, var1, var2, operator):
-    global code
-    # Only if both the vars are another vars in memory.
-    result_address = get_address_of_variable(result_var_name)
-    var1 = var1.strip()
-    var2 = var2.strip()
-
     op = 0
     if operator == "&":
         op = 0
     if operator == "|":
         op = 1
 
-    isVar1_var_in_ram = isVariableInRAM(var1)
-    isVar2_var_in_ram = isVariableInRAM(var2)
-    both_are_variables_in_ram = isVar1_var_in_ram and isVar2_var_in_ram
+    result_address = get_address_of_variable(result_var_name)
+    load_variables_into_registers(var1, var2)
 
-    if both_are_variables_in_ram:
-        var1_address = get_address_of_variable(var1)
-        var2_address = get_address_of_variable(var2)
-
-        # Load var1 to A.
-        code += set_Memory_Address(var1_address)
-        code += set_tmp_equals_RAM()
-        code += A_REGISTER.set_value_equals_tmp()
-
-        code += set_Memory_Address(var2_address)
-        code += set_tmp_equals_RAM()
-        code += set_B_equals_tmp()
-
-        code += set_Memory_Address(result_address)
-        code += set_tmp_equals_LOGIC_ACCUM(op)
-        code += set_RAM_equals_tmp()
-        code += "\n"
-    elif isVar1_var_in_ram:
-        # Something like this a1 + 10
-        var1_address = get_address_of_variable(var1)
-        # Load a1 to A.
-        code += set_Memory_Address(var1_address)
-        code += set_tmp_equals_RAM()
-        code += A_REGISTER.set_value_equals_tmp()
-
-        code += set_B(int(var2))
-
-        code += set_Memory_Address(result_address)
-        code += set_tmp_equals_LOGIC_ACCUM(op)
-        code += set_RAM_equals_tmp()
-        code += "\n"
-    elif isVar2_var_in_ram:
-        # Something like this 10 - a1
-        var2_address = get_address_of_variable(var2)
-        # Load a1 to A.
-        code += set_Memory_Address(var2_address)
-        code += set_tmp_equals_RAM()
-        code += set_B_equals_tmp()
-
-        code += A_REGISTER.set_value(int(var1))
-
-        code += set_Memory_Address(result_address)
-        code += set_tmp_equals_LOGIC_ACCUM(op)
-        code += set_RAM_equals_tmp()
-        code += "\n"
-    else:
-        # both are constants.
-        # Something like this 10 + 10
-        code += A_REGISTER.set_value(int(var1))
-        code += set_B(var2)
-
-        code += set_Memory_Address(result_address)
-        code += set_tmp_equals_LOGIC_ACCUM(op)
-        code += set_RAM_equals_tmp()
-        code += "\n"
+    global code
+    code += REGISTER_MEMORY_ADDRESS.equals(result_address)
+    code += set_tmp_equals_LOGIC_ACCUM(op)
+    code += REGISTER_RAM.equals_tmp()
+    code += "\n"
 
 
 def write_conditional_assignment(var1, var2, operator):
+    load_variables_into_registers(var1, var2)
+    # TODO:Make use of operator variable.
     global code
-    # Only if both the vars are another vars in memory.
-    var1 = var1.strip()
-    var2 = var2.strip()
-    # every operators result is calculated at once in their own register's.
-    op = 0
-
-    isVar1_var_in_ram = isVariableInRAM(var1)
-    isVar2_var_in_ram = isVariableInRAM(var2)
-    both_are_variables_in_ram = isVar1_var_in_ram and isVar2_var_in_ram
-
-    if both_are_variables_in_ram:
-        var1_address = get_address_of_variable(var1)
-        var2_address = get_address_of_variable(var2)
-
-        # Load var1 to A.
-        code += set_Memory_Address(var1_address)
-        code += set_tmp_equals_RAM()
-        code += A_REGISTER.set_value_equals_tmp()
-
-        code += set_Memory_Address(var2_address)
-        code += set_tmp_equals_RAM()
-        code += set_B_equals_tmp()
-
-        code += set_all_logical_comparisions()
-
-        code += "\n"
-    elif isVar1_var_in_ram:
-        # Something like this a1 + 10
-        var1_address = get_address_of_variable(var1)
-        # Load a1 to A.
-        code += set_Memory_Address(var1_address)
-        code += set_tmp_equals_RAM()
-        code += A_REGISTER.set_value_equals_tmp()
-
-        code += set_B(int(var2))
-
-        code += set_all_logical_comparisions()
-
-        code += "\n"
-    elif isVar2_var_in_ram:
-        # Something like this 10 - a1
-        var2_address = get_address_of_variable(var2)
-        # Load a1 to A.
-        code += set_Memory_Address(var2_address)
-        code += set_tmp_equals_RAM()
-        code += set_B_equals_tmp()
-
-        code += A_REGISTER.set_value(int(var1))
-
-        code += set_all_logical_comparisions()
-
-        code += "\n"
-    else:
-        # both are constants.
-        # Something like this 10 + 10
-        code += A_REGISTER.set_value(int(var1))
-        code += set_B(var2)
-
-        code += set_all_logical_comparisions()
-
-        code += "\n"
+    code += set_all_logical_comparisions()
+    code += "\n"
 
 
 def write_arithmatic_assignment(result_var_name, var1, var2, p_op):
@@ -698,39 +320,36 @@ def write_arithmatic_assignment(result_var_name, var1, var2, p_op):
     var1 = var1.strip()
     var2 = var2.strip()
     p_op = p_op.strip()
-    print(p_op)
 
     if p_op == "+" or p_op == "-":
-        print("add_sub_op")
+        print("Add Sub OP")
         write_add_sub_assignment(result_var_name, var1, var2, p_op)
         return
 
     if p_op == "&" or p_op == "|":
-        print("and_or_op")
+        print("And Or OP")
         write_and_or_assignment(result_var_name, var1, var2, p_op)
         return
 
     # CONDITIONAL_OPERATORS = ['>', '<', ':']
     if p_op == ">" or p_op == "<" or p_op == ":":
-        print("conditional_operator")
+        print("Conditional Operator")
         write_conditional_assignment(var1, var2, p_op)
         return
 
 
 def write_NOP():
     global code
-    code += _set_NOP() + "\n"
+    code += emit_NOP() + "\n"
 
 
 def write_halt():
     global code
-    code += _set_HALT() + "\n"
+    code += emit_HALT() + "\n"
 
 
 def _set_program_counter(pc):
-    _code = ""
-    _code += str(OPCODE_SET_PC) + " , " + str(pc) + "\n"
-    return _code
+    return str(OPCODE_SET_PC) + " , " + str(pc) + "\n"
 
 
 # write in ascii,probably to modify it next pass.
