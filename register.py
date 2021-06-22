@@ -2,7 +2,7 @@ from constants import *
 
 
 ####INSTRUCTION FORMAT-	 ( 1 ) ( 2 ) (3 4 5 6) ( 7) ( 8 ) th bit from left.
-####						L-----|-----|------|-----|-GLOBAL INPUT LINE = INPUT STREAM IF 0.IF 1,INPUT LINE = TEMP REG OUTPUT.
+####						L-----|-----|------|-----|-GLOBAL INPUT LINE = INPUT STREAM, IF 0.IF 1,INPUT LINE = TEMP REG OUTPUT.
 ####							  L-----|------|-----|-STORE TO TMP REGISTER. A,B,C ETC CAN WRITE TO OUTPUT LINE,AND IS STORED TO TMP REGISTER.
 ####							        L------|-----|-INDEX OF REGISTER TO PERFORM OPERATIONS ON.
 ####									       L-----|-REGISTERS WRITE TO OUTPUT LINE IF 1.
@@ -15,7 +15,7 @@ def encode_inputs(
     reg_read_from_in_line,
 ):
     if reg_write_to_out_line > 1 or reg_read_from_in_line > 1:
-        print("Way too large.")
+        raise Exception("r/w line should be just 1 bit.")
 
     bit1 = set_input_ifstream << 7
     bit2 = write_to_temp_reg << 6
@@ -45,12 +45,6 @@ class Register:
         # Registers reads from input line.
         param = encode_inputs(1, 0, self.REGISTER_ID, 0, 1)
         return emit_code(0, param)
-
-    """
-    def set_tmp_equals_self(self):
-        param = encode_inputs(0, 1, self.REGISTER_ID, 1, 0)
-        return emit_code(0, param)
-    """
 
 
 ##################################################################################

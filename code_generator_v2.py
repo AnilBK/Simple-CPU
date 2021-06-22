@@ -33,6 +33,24 @@ def get_address_of_variable(var_name):
     return int(variables_address_mapping[var_name])
 
 
+def check_variable_validity(var1, var2):
+    var1 = var1.strip()
+    var2 = var2.strip()
+    # A variable in RAM or a numeric constant is valid.
+    isVar1Valid = isVariableInRAM(var1) or is_number(var1)
+    isVar2Valid = isVariableInRAM(var2) or is_number(var2)
+
+    if not isVar1Valid:
+        print("Stack:")
+        print(variables_address_mapping)
+        raise Exception("" + var1 + " is neither a defined variable nor a constant.")
+
+    if not isVar2Valid:
+        print("Stack:")
+        print(variables_address_mapping)
+        raise Exception("" + var2 + " is neither a defined variable nor a constant.")
+
+
 def emit_NOP():
     global code
     code += str(NOP) + " , " + str(0) + "\n" + "\n"
@@ -45,6 +63,12 @@ def emit_HALT():
 
 def emit_set_program_counter(pc):
     return str(OPCODE_SET_PC) + " , " + str(pc) + "\n"
+
+
+# write in ascii,probably to modify it next pass.
+def write_text_code(p_code):
+    global code
+    code += p_code
 
 
 def set_jump(LAST_OP, new_program_counter):
@@ -75,11 +99,8 @@ def write_assignment(var_name, value):
     address = get_address_of_variable(var_name)
     value = value.strip()
 
-    print("WriteAssignmentFunc:")
     print(value)
-
-    print("is var in ram:")
-    print(isVariableInRAM(value))
+    print("Stack:")
     print(variables_address_mapping)
     # value can not only be number but another variable itself.
     if is_number(value):
@@ -158,8 +179,10 @@ def write_and_or_assignment(result_var_name, var1, var2, operator):
     op = 0
     if operator == "&":
         op = 0
+        print("and")
     if operator == "|":
         op = 1
+        print("or")
 
     result_address = get_address_of_variable(result_var_name)
     load_variables_into_registers(var1, var2)
@@ -185,13 +208,15 @@ def write_arithmatic_assignment(result_var_name, var1, var2, p_op):
     var2 = var2.strip()
     p_op = p_op.strip()
 
+    check_variable_validity(var1, var2)
+
     if p_op == "+" or p_op == "-":
-        print("Add Sub OP")
+        print("Add Sub Operator")
         write_add_sub_assignment(result_var_name, var1, var2, p_op)
         return
 
     if p_op == "&" or p_op == "|":
-        print("And Or OP")
+        print("And Or Operator")
         write_and_or_assignment(result_var_name, var1, var2, p_op)
         return
 
@@ -200,17 +225,6 @@ def write_arithmatic_assignment(result_var_name, var1, var2, p_op):
         print("Conditional Operator")
         write_conditional_assignment(var1, var2, p_op)
         return
-
-
-# write in ascii,probably to modify it next pass.
-def write_text_code(p_code):
-    global code
-    code += p_code
-
-
-def write_jump_back_label():
-    global code
-    code += emit_set_program_counter(label_position) + "\n"
 
 
 def simplify_equation(big_eqn):
@@ -257,7 +271,6 @@ def simplify_equation(big_eqn):
             print(op)
         print("\n")
         print("New code:\nTotal vars:")
-        # main_var_name
         main_var_name = main_var_name.strip()
         total_vars = len(vars)
         print(total_vars)
@@ -327,20 +340,7 @@ with open(file_name) as fp:
         line = line.strip()
         print("Line{}: {}".format(count, line))
 
-        if "=" in line and (not line.startswith("FOR")):
-            if "+=" in line:
-                var_name, value = line.split("+=")
-                var_name = var_name.strip()
-                value = value.strip()
-                simplified_code += var_name + " = " + var_name + " + " + value + "\n"
-            elif "-=" in line:
-                var_name, value = line.split("-=")
-                var_name = var_name.strip()
-                value = value.strip()
-                simplified_code += var_name + " = " + var_name + " - " + value + "\n"
-            else:
-                simplified_code += simplify_equation(line)
-        elif line.startswith("FOR"):
+        if line.startswith("FOR"):
             all_tokens = line.split(" ")
             loop_name = ""
             loop_begin = ""
@@ -349,7 +349,7 @@ with open(file_name) as fp:
             # x = "FOR I = 1 TO 10 STEP 1"
             # z = x.split(" ")
             # z ----->['FOR', 'I', '=', '1', 'TO', '10', 'STEP', '1']
-            print("Begin of a for loop \n\n\n\n\n\n\n\n\n")
+            print("Begin of a for loop \n\n\n\n\n")
             if len(all_tokens) >= 6:
                 contains_loop = all_tokens[0] == "FOR"
                 contains_equal = all_tokens[2] == "="
@@ -411,11 +411,44 @@ with open(file_name) as fp:
                         simplified_code += (
                             "JUMP_TO_IF_LAST_OP_SMALL " + p_loop_label + "\n"
                         )
+        elif "=" in line:
+            # We are checking = in the last because,
+            # FOR I = 1 to 10 has =,
+            # so that can mess up the checks.
+            compoundAssignmentOperators = ["+", "-", "&", "|"]
+            hasCompoundOperators = False
+            for operator in compoundAssignmentOperators:
+                operatorCombined = operator + "="  # += or -= or &= or |=
+                if operatorCombined in line:
+                    hasCompoundOperators = True
+                    var_name, value = line.split(operatorCombined)  # line.split("+=")
+                    var_name = var_name.strip()
+                    value = value.strip()
+                    simplified_code += (
+                        var_name
+                        + " = "
+                        + var_name
+                        + " "
+                        + operator
+                        + " "
+                        + value
+                        + "\n"
+                    )
+                    break
+                    # Same as simplified_code += var_name + " = " + var_name + " + " + value + "\n"
 
+            if hasCompoundOperators:
+                continue
+            else:
+                # it is a long equation like a = 10 or a = 10 + a2 + 30 + 40.
+                simplified_code += simplify_equation(line)
         else:
             simplified_code += line + "\n"
 
-s_c_f = open("simplified_code.txt", "w")
+
+simplified_code_file = "simplified_code.txt"
+
+s_c_f = open(simplified_code_file, "w")
 s_c_f.write(simplified_code)
 s_c_f.close()
 
@@ -424,13 +457,13 @@ s_c_f.close()
 # with open(file_name) as fp:
 count = 0
 
-with open("simplified_code.txt") as fp:
+with open(simplified_code_file) as fp:
 
     Lines = fp.readlines()
     for line in Lines:
         count += 1
         line = line.strip()
-        print("Line {} : {}".format(count, line))
+        print("\n\nLine {} : {}".format(count, line))
 
         if "=" in line:
             # Assignment statement.
@@ -447,7 +480,6 @@ with open("simplified_code.txt") as fp:
                     break
 
             if containsAdditionalOperators:
-                print("Arithmatic assignent")
                 print("value before splittin:" + value)
                 var_1, var_2 = value.split(p_op)
                 var_1 = var_1.strip()
@@ -456,6 +488,7 @@ with open("simplified_code.txt") as fp:
                 write_arithmatic_assignment(var_name, var_1, var_2, p_op)
             else:
                 # just a normal assignment.
+                print("Normal setting of values.")
                 write_assignment(var_name, value)
 
         if line == "NOP":
@@ -464,12 +497,9 @@ with open("simplified_code.txt") as fp:
             emit_HALT()
         elif line.startswith("LABEL"):
             # Do it next pass.
-            # label_position = count - 1
             write_text_code(line + "\n")
         elif line == "JUMP_T0_LABEL":
             write_text_code(line + "\n")
-            # print("Jump back:" + str(label_position))
-            # write_jump_back_label()
         elif line.startswith("JUMP_TO_IF_LAST_OP_SMALL"):
             write_text_code(line + "\n")
 
@@ -500,7 +530,7 @@ with open(gen_code_file) as fp:
 
             # Save it in a list.
             if label_name in jump_labels.keys():
-                print("Error..Redeclaration of label")
+                raise Exception("Error..Redeclaration of label")
             else:
                 jump_labels[label_name] = label_pos
             continue
@@ -566,8 +596,8 @@ with open(gen_code_file) as fp:
                 line = line.strip()
                 print("generate_code for jump if small: " + line)
             else:
-                print("Error..Jumping")
-                continue
+                raise Exception("Error..Jumping")
+                # continue
 
         string1, string2 = line.split(",")
 
@@ -587,4 +617,4 @@ ih_data.write_hex_file(file_data)
 file_code.close()
 file_data.close()
 
-print("Total instructions:" + str(instruction_counter))
+print("\nTotal instructions:" + str(instruction_counter))
