@@ -2,11 +2,11 @@ from constants import *
 
 
 ####INSTRUCTION FORMAT-	 ( 1 ) ( 2 ) (3 4 5 6) ( 7) ( 8 ) th bit from left.
-####						L-----|-----|------|-----|-GLOBAL INPUT LINE = INPUT STREAM, IF 0.IF 1,INPUT LINE = TEMP REG OUTPUT.
-####							  L-----|------|-----|-STORE TO TMP REGISTER. A,B,C ETC CAN WRITE TO OUTPUT LINE,AND IS STORED TO TMP REGISTER.
-####							        L------|-----|-INDEX OF REGISTER TO PERFORM OPERATIONS ON.
-####									       L-----|-REGISTERS WRITE TO OUTPUT LINE IF 1.
-####											     L-REGISTERS READ FROM INPUT LINE IF 1.
+####                        L-----|-----|------|-----|-GLOBAL INPUT LINE = INPUT STREAM, IF 0.IF 1,INPUT LINE = TEMP REG OUTPUT.
+####                              L-----|------|-----|-STORE TO TMP REGISTER. A,B,C ETC CAN WRITE TO OUTPUT LINE,AND IS STORED TO TMP REGISTER.
+####                                    L------|-----|-INDEX OF REGISTER TO PERFORM OPERATIONS ON.
+####                                           L-----|-REGISTERS WRITE TO OUTPUT LINE IF 1.
+####                                                 L-REGISTERS READ FROM INPUT LINE IF 1.
 def encode_inputs(
     set_input_ifstream,
     write_to_temp_reg,
